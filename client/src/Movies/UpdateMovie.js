@@ -13,14 +13,10 @@ const UpdateMovie = props => {
   const {id} = useParams();
 
   useEffect(() => {
-        const movieToUpdate = props.movieList.find(item => `${item.id}` === id);
+    const correctMovie = props.movieList.find(item => `${item.id}` === id);
+      correctMovie && setMovie(correctMovie);
 
-        if (movieToUpdate) {
-            setMovie(movieToUpdate);
-            console.log("Use effect edited updatedMovie to: ", movie)
-        }
-
-    }, [props.movieList, id])
+    }, [props.movieList, id]);
   // const match = useRouteMatch();
   //
   // const fetchMovie = id => {
@@ -58,6 +54,16 @@ const UpdateMovie = props => {
       .catch(err => console.error(err));
   };
 
+  const deleteHandler = e => {
+    e.preventDefault();
+    axios
+      .delete(`http://localhost:5000/api/movies/${id}`)
+      .then(() => {
+        props.getMovieList();
+        props.history.push('/');
+      });
+  };
+
   return(
     <section>
       <form onSubmit={submitHandler}>
@@ -89,6 +95,7 @@ const UpdateMovie = props => {
         /> */}
         <button type="submit">Edit</button>
       </form>
+      <button onClick={deleteHandler}>Delete Movie</button>
     </section>
   );
 }
