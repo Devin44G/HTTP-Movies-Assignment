@@ -1,10 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useRouteMatch, Link } from 'react-router-dom';
+import { useRouteMatch, Link, useParams } from 'react-router-dom';
 
 const UpdateMovie = props => {
-  const [movie, setMovie] = useState(props.movieList);
-  console.log('MOVIES ', props);
+  const [movie, setMovie] = useState({
+    title: '',
+    director: '',
+    metascore: ''
+  });
+  console.log('MOVIES ', props.movieList);
+
+  const {id} = useParams();
+
+  useEffect(() => {
+        const movieToUpdate = props.movieList.find(item => `${item.id}` === id);
+
+        if (movieToUpdate) {
+            setMovie(movieToUpdate);
+            console.log("Use effect edited updatedMovie to: ", movie)
+        }
+
+    }, [props.movieList, id])
   // const match = useRouteMatch();
   //
   // const fetchMovie = id => {
@@ -25,7 +41,7 @@ const UpdateMovie = props => {
 
   const changeHandler = e => {
     setMovie({
-      ...movie.movieList,
+      ...movie,
       [e.target.name]: e.target.value
     });
   };
@@ -33,8 +49,12 @@ const UpdateMovie = props => {
   const submitHandler = e => {
     e.preventDefault();
     axios
-      .put('http://localhost:5000/api/movies/', movie)
-      .then(res => console.log('RES ', res))
+      .put(`http://localhost:5000/api/movies/${id}`, movie)
+      .then(res => {
+        console.log('RES ', res);
+        props.getMovieList();
+        props.history.push('/');
+      })
       .catch(err => console.error(err));
   };
 
@@ -52,7 +72,7 @@ const UpdateMovie = props => {
           name="director"
           type="text"
           placeholder="Edit Title"
-          value={movie.metascore}
+          value={movie.director}
           onChange={changeHandler}
         />
         <input
