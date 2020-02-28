@@ -1,103 +1,109 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useRouteMatch, Link, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+
+const initialItem = {
+	title: "",
+	director: "",
+	metascore: "",
+	stars: []
+};
 
 const UpdateMovie = props => {
-  const [movie, setMovie] = useState({
-    title: '',
-    director: '',
-    metascore: ''
-  });
-  console.log('MOVIES ', props.movieList);
+	const [movie, setMovie] = useState(initialItem);
+	const { id } = useParams();
 
-  const {id} = useParams();
+	useEffect(() => {
+		const movieToUpdate = props.movieList.find(thing => `${thing.id}` === id);
 
-  useEffect(() => {
-    const correctMovie = props.movieList.find(item => `${item.id}` === id);
-      correctMovie && setMovie(correctMovie);
+		if (movieToUpdate) {
+			setMovie(movieToUpdate);
+		}
+	}, [props.setMovie, id]);
 
-    }, [props.movieList, id]);
-  // const match = useRouteMatch();
-  //
-  // const fetchMovie = id => {
-  //   axios
-  //     .get(`http://localhost:5000/api/movies/${id}`)
-  //     .then(res => setMovie(res.data))
-  //     .catch(err => console.log(err.response));
-  // };
-  // console.log(movie);
-  //
-  // useEffect(() => {
-  //   fetchMovie(match.params.id);
-  // }, [match.params.id]);
-  //
-  // if (!movie) {
-  //     return <div>Loading movie information...</div>;
-  // }
+	const changeHandler = e => {
+		e.persist();
+		let targetVal = e.target.value;
+    
+		if (e.target.name === 'metascores') {
+			targetVal = parseInt(targetVal, 10);
+    } else if (e.target.name === 'stars') {
+        targetVal = targetVal.split(',')
+      }
 
-  const changeHandler = e => {
-    setMovie({
-      ...movie,
-      [e.target.name]: e.target.value
-    });
-  };
+		setMovie({
+			...movie,
+			[e.target.name]: targetVal
+		});
+	};
 
-  const submitHandler = e => {
-    e.preventDefault();
-    axios
-      .put(`http://localhost:5000/api/movies/${id}`, movie)
-      .then(res => {
-        console.log('RES ', res);
-        props.getMovieList();
-        props.history.push('/');
-      })
-      .catch(err => console.error(err));
-  };
+	const handleSubmit = e => {
+		e.preventDefault();
+		axios
+			.put(`http://localhost:5000/api/movies/${id}`, movie)
+			.then(res => {
+				console.log(res)
+                props.getMovieList();
+				props.history.push(`/movies/${id}`);
+			})
+			.catch(err => console.log(err));
+	};
 
   const deleteHandler = e => {
-    e.preventDefault();
-    axios
-      .delete(`http://localhost:5000/api/movies/${id}`)
-      .then(() => {
-        props.getMovieList();
-        props.history.push('/');
-      });
-  };
+   e.preventDefault();
+   axios
+     .delete(`http://localhost:5000/api/movies/${id}`)
+     .then(() => {
+       props.getMovieList();
+       props.history.push('/');
+     });
+ };
 
-  return(
-    <section>
-      <form onSubmit={submitHandler}>
-        <input
-          name="title"
-          type="text"
-          placeholder="Edit Title"
-          value={movie.title}
-          onChange={changeHandler}
-        />
-        <input
-          name="director"
-          type="text"
-          placeholder="Edit Title"
-          value={movie.director}
-          onChange={changeHandler}
-        />
-        <input
-          name="metascore"
-          type="text"
-          placeholder="Edit Title"
-          value={movie.metascore}
-          onChange={changeHandler}
-        />
-        {/* <input
-          name="stars"
-          type="text"
-          placeholder="Edit Title"
-        /> */}
+	return (
+		<div>
+			<h2>Update Movie</h2>
+
+			<form onSubmit={handleSubmit}>
+				<input
+					type="text"
+					name="title"
+					onChange={changeHandler}
+					placeholder="Title"
+					value={movie.title}
+    />
+
+
+				<input
+					type="text"
+					name="director"
+					onChange={changeHandler}
+					placeholder="Director"
+					value={movie.director}
+    />
+
+
+				<input
+					type="number"
+					name="metascore"
+					onChange={changeHandler}
+					placeholder="Metascore"
+					value={movie.metascore}
+    />
+
+
+				<input
+					type="string"
+					name="stars"
+					onChange={changeHandler}
+					placeholder="Stars"
+					value={movie.stars}
+    />
+
         <button type="submit">Edit</button>
-      </form>
-      <button onClick={deleteHandler}>Delete Movie</button>
-    </section>
-  );
-}
+			</form>
+      <button onClick={deleteHandler}>Delete</button>
+		</div>
+	);
+};
 
 export default UpdateMovie;
